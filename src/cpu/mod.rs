@@ -78,6 +78,8 @@ impl CPU {
             0x3 => if self.v(n2) == b2 { self.skip() },
             // SNE Vx, y
             0x4 => if self.v(n2) != b2 { self.skip() },
+            // SE Vx, Vy
+            0x5 => if self.v(n2) == self.v(n3) { self.skip() },
             // LD Vx, y
             0x6 => self.set_v(n2, b2),
             // ADD Vx, y
