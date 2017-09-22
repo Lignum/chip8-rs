@@ -21,9 +21,21 @@ impl Memory {
         addr < self.mem.len()
     }
 
+    pub fn block_in_range(&self, addr: usize, size: usize) -> bool {
+        addr < self.mem.len() && addr + size < self.mem.len()
+    }
+
     pub fn block(&self, addr: usize, size: usize) -> Option<&[u8]> {
-        if self.in_range(addr) {
+        if self.block_in_range(addr, size) {
             Some(&self.mem[addr..(addr+size)])
+        } else {
+            None
+        }
+    }
+
+    pub fn block_mut(&mut self, addr: usize, size: usize) -> Option<&mut [u8]> {
+        if self.block_in_range(addr, size) {
+            Some(&mut self.mem[addr..(addr+size)])
         } else {
             None
         }
