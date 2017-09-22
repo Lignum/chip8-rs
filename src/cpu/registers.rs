@@ -23,17 +23,17 @@ impl Registers {
         i <= 0xF
     }
 
-    pub fn v(&self, i: usize) -> Option<u8> {
-        if Registers::valid_register_index(i) {
-            Some(self.v[i])
+    pub fn v(&self, x: usize) -> Option<u8> {
+        if Registers::valid_register_index(x) {
+            Some(self.v[x])
         } else {
             None
         }
     }
 
-    pub fn set_v(&mut self, i: usize, v: u8) -> Option<()> {
-        if Registers::valid_register_index(i) {
-            self.v[i] = v;
+    pub fn set_v(&mut self, x: usize, v: u8) -> Option<()> {
+        if Registers::valid_register_index(x) {
+            self.v[x] = v;
             Some(())
         } else {
             None
