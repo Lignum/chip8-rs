@@ -15,6 +15,35 @@ pub fn ld_test() {
     cpu.execute(0x8210); // LD V2, V1
     assert_eq!(Some(0x42), cpu.regs.v(0x1));
     assert_eq!(Some(0x42), cpu.regs.v(0x2));
+
+    cpu.execute(0xA666); // LD I, 0x666
+    assert_eq!(0x666, cpu.regs.i);
+}
+
+#[test]
+pub fn flow_jp_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x60, 0x00, // 0200 - LD V0, 0x00
+        0x70, 0x01, // 0202 - ADD V0, 0x01
+        0x30, 0x0A, // 0204 - SE V0, 0x0A
+        0x12, 0x02, // 0206 - JP 0x002
+    ]);
+
+    cpu.run(true);
+
+    assert_eq!(Some(0x0A), cpu.regs.v(0x0));
+
+    cpu.mem.load_program(&[
+        0x60, 0x04, // 0200 - LD V0, 0x02
+        0x61, 0x00, // 0202 - LD V1, 0x00
+        0x71, 0x01, // 0204 - ADD V1, 0x01
+        0x31, 0x0A, // 0206 - SE V1, 0x0A
+        0xB2, 0x00, // 0208 - JP V0, 0x002
+    ]);
+
+    cpu.regs.pc = 0x200;
+    cpu.run(true);
 }
 
 #[test]

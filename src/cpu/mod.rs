@@ -28,7 +28,7 @@ impl CPU {
     }
 
     fn jump(&mut self, addr: u16) {
-        self.regs.pc = addr;
+        self.regs.pc = addr - 2;
     }
 
     fn skip(&mut self) {
@@ -133,7 +133,13 @@ impl CPU {
             },
             // SNE Vx, Vy
             0x9 => if self.v(n2) != self.v(n3) { self.skip() },
-
+            // LD I, x
+            0xA => self.regs.i = c2,
+            // JP V0, x
+            0xB => {
+                let v0 = self.v(0x0);
+                self.jump(c2 + v0 as u16)
+            },
             _ => unknown_inst()
         }
     }
