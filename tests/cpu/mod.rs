@@ -141,6 +141,37 @@ pub fn branch_test() {
 }
 
 #[test]
+pub fn reg_mem_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x60, 0x01, // LD V0, 0x01
+        0x61, 0x02, // LD V1, 0x02
+        0x62, 0x03, // LD V2, 0x03
+        0xA0, 0x04, // LD I, 0x004
+        0xF2, 0x55, // LD [I], V2
+
+        0x60, 0x00, // LD V0, 0x00
+        0x61, 0x00, // LD V1, 0x00
+        0x62, 0x00, // LD V2, 0x00
+
+        0xA0, 0x04, // LD I, 0x004
+        0xF2, 0x65, // LD V2, [I]
+    ]);
+
+    cpu.run(true);
+
+    assert_eq!(Some(0x01), cpu.mem.peek(0x004));
+    assert_eq!(Some(0x02), cpu.mem.peek(0x005));
+    assert_eq!(Some(0x03), cpu.mem.peek(0x006));
+
+    assert_eq!(Some(0x01), cpu.regs.v(0));
+    assert_eq!(Some(0x02), cpu.regs.v(1));
+    assert_eq!(Some(0x03), cpu.regs.v(2));
+
+    assert_eq!(0x007, cpu.regs.i);
+}
+
+#[test]
 pub fn step_test() {
     let mut cpu = CPU::new();
     cpu.mem.load_program(&[

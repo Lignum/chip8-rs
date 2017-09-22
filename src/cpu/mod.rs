@@ -166,7 +166,27 @@ impl CPU {
                     0x1E => self.regs.i += self.v(n2) as u16,
                     // LD F, Vx
                     0x29 => self.regs.i = 0x00 + 5 * self.v(n2) as u16,
-
+                    // LD [I], Vx
+                    0x55 => {
+                        for i in 0..(n2+1) {
+                            let v = self.v(i);
+                            if self.mem.poke(self.regs.i as usize, v).is_none() {
+                                break;
+                            }
+                            self.regs.i += 1;
+                        }
+                    },
+                    // LD Vx, [I]
+                    0x65 => {
+                        for i in 0..(n2+1) {
+                            if let Some(v) = self.mem.peek(self.regs.i as usize) {
+                                self.regs.set_v(i as usize, v);
+                            } else {
+                                break;
+                            }
+                            self.regs.i += 1;
+                        }
+                    }
                     _ => unknown_inst()
                 }
             }
