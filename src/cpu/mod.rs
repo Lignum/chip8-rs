@@ -8,10 +8,14 @@ use self::memory::Memory;
 use std;
 use std::num::Wrapping;
 
+use rand;
+use rand::{ThreadRng, Rng};
+
 pub struct CPU {
     pub regs: Registers,
     pub mem: Memory,
-    pub stack: Vec<u16>
+    pub stack: Vec<u16>,
+    rng: ThreadRng
 }
 
 fn unknown_inst() {
@@ -23,7 +27,8 @@ impl CPU {
         CPU {
             regs: Registers::new(),
             mem: Memory::new(),
-            stack: Vec::with_capacity(16)
+            stack: Vec::with_capacity(16),
+            rng: rand::thread_rng()
         }
     }
 
@@ -138,8 +143,34 @@ impl CPU {
             // JP V0, x
             0xB => {
                 let v0 = self.v(0x0);
-                self.jump(c2 + v0 as u16)
+                self.jump(c2 + v0 as u16);
             },
+            // RND Vx, x
+            0xC => {
+                let r = self.rng.gen::<u8>();
+                self.set_v(n2, r & b2);
+            },
+
+            0xF => {
+                match b2 {
+                    // LD Vx, DT
+                    0x07 => {
+                        let dt = self.regs.dt;
+                        self.set_v(n2, dt);
+                    },
+                    // LD DT, Vx
+                    0x15 => self.regs.dt = self.v(n2),
+                    // LD ST, Vx
+                    0x18 => self.regs.st = self.v(n2),
+                    // ADD I, Vx
+                    0x1E => self.regs.i += self.v(n2) as u16,
+                    // LD F, Vx
+                    0x29 => self.regs.i = 0x00 + 5 * self.v(n2) as u16,
+
+                    _ => unknown_inst()
+                }
+            }
+
             _ => unknown_inst()
         }
     }

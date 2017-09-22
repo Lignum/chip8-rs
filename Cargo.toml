@@ -1,7 +1,10 @@
 [package]
+authors = ["Lignum <me@lignum.pw>"]
 name = "chip8"
 version = "0.1.0"
-authors = ["Lignum <me@lignum.pw>"]
+
+[dependencies]
+rand = "*"
 
 [lib]
 name = "chip8"
@@ -10,5 +13,3 @@ path = "src/lib.rs"
 [[bin]]
 name = "chip8_emu"
 path = "src/main.rs"
-
-[dependencies]

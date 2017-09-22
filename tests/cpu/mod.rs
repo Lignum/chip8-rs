@@ -56,7 +56,7 @@ pub fn add_test() {
         0x62, 0x02, // LD V2, 0x02
         0x61, 0xFF, // LD V1, 0xFF
         0x82, 0x14, // ADD V2, V1
-    ]).unwrap();
+    ]);
 
     cpu.run(true);
 
@@ -130,7 +130,7 @@ pub fn branch_test() {
         0x64, 0x80, // LD V4, 0x80
         0x53, 0x40, // SE V3, V4
         0x65, 0x64, // LD V5, 0x64
-    ]).unwrap();
+    ]);
 
     cpu.run(true);
 
@@ -145,7 +145,7 @@ pub fn step_test() {
     let mut cpu = CPU::new();
     cpu.mem.load_program(&[
         0x60, 0x42 // LD V0, 0x42
-    ]).unwrap();
+    ]);
 
     cpu.step();
 
@@ -160,7 +160,7 @@ pub fn run_test() {
         0x61, 0x24, // LD V1, 0x24
         0x62, 0x22, // LD V2, 0x22
         0x63, 0x44  // LD V3, 0x44
-    ]).unwrap();
+    ]);
 
     cpu.run(true);
 
