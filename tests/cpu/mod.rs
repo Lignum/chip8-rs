@@ -64,6 +64,23 @@ pub fn subtract_test() {
 }
 
 #[test]
+pub fn shift_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x60, 0x04, // LD V0, 0x04
+        0x81, 0x0E, // SHL V1, V0
+
+        0x62, 0x08, // LD V2, 0x08
+        0x83, 0x26, // SHR V3, V2
+    ]);
+
+    cpu.run(true);
+
+    assert_eq!(Some(0x08), cpu.regs.v(0x1));
+    assert_eq!(Some(0x04), cpu.regs.v(0x3));
+}
+
+#[test]
 pub fn branch_test() {
     let mut cpu = CPU::new();
     cpu.mem.load_program(&[

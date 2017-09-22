@@ -97,20 +97,37 @@ impl CPU {
                 let y = self.v(n3);
 
                 match n4 {
+                    // LD Vx, Vy
                     0x0 => self.set_v(n2, y),
+                    // OR Vx, Vy
                     0x1 => self.set_v(n2, x | y),
+                    // AND Vx, Vy
                     0x2 => self.set_v(n2, x & y),
+                    // XOR Vx, Vy
                     0x3 => self.set_v(n2, x ^ y),
+                    // ADD Vx, Vy
                     0x4 => {
                         let carry = if x as u16 + y as u16 > std::u8::MAX as u16 { 1 } else { 0 };
                         self.set_v(0xF, carry);
                         self.set_v(n2, (Wrapping(x) + Wrapping(y)).0);
                     },
+                    // SUB Vx, Vy / SUBN Vx, Vy
                     0x5 | 0x7 => {
                         let borrow = if n4 == 0x5 { x <= y } else { y <= x };
                         self.set_v(0xF, if !borrow { 1 } else { 0 });
                         self.set_v(n2, (Wrapping(x) - Wrapping(y)).0);
-                    }
+                    },
+                    // SHR Vx, Vy
+                    0x6 => {
+                        self.set_v(0xF, y & 0x1);
+                        self.set_v(n2, y >> 1);
+                    },
+                    // SHL Vx, Vy
+                    0xE => {
+                        self.set_v(0xF, (y & 0x80) >> 7);
+                        self.set_v(n2, y << 1);
+                    },
+
                     _ => unknown_inst()
                 }
             },
