@@ -3,7 +3,6 @@ pub struct Registers {
     pub dt: u8,
     pub st: u8,
     pub pc: u16,
-    pub sp: u8,
     v: [u8; 16]
 }
 
@@ -14,7 +13,6 @@ impl Registers {
             dt: 0,
             st: 0,
             pc: 0,
-            sp: 0,
             v: [0; 16]
         }
     }

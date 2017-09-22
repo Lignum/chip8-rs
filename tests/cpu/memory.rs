@@ -28,7 +28,7 @@ pub fn memory_characters() {
 #[test]
 pub fn memory_peek_poke_block() {
     let mut mem = Memory::new();
-    
+
     if let Some(block) = mem.block_mut(0x0, 3) {
         block[0] = 1;
         block[1] = 2;
