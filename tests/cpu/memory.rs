@@ -47,3 +47,19 @@ pub fn memory_peek_poke_block() {
         panic!("read: block == None");
     }
 }
+
+#[test]
+pub fn memory_load() {
+    let mut mem = Memory::new();
+
+    mem.load(0x0, &[1, 2, 3]).expect("load failed");
+    mem.load_program(&[1, 2, 3]).expect("load_program failed");
+
+    assert_eq!(Some(1), mem.peek(0x0));
+    assert_eq!(Some(2), mem.peek(0x1));
+    assert_eq!(Some(3), mem.peek(0x2));
+
+    assert_eq!(Some(1), mem.peek(0x200));
+    assert_eq!(Some(2), mem.peek(0x201));
+    assert_eq!(Some(3), mem.peek(0x202));
+}

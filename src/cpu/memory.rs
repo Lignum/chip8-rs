@@ -8,13 +8,9 @@ pub const CHIP8_MEMORY_SIZE: usize = 4096;
 
 impl Memory {
     pub fn new() -> Memory {
-        let mut mem: [u8; CHIP8_MEMORY_SIZE] = [0; CHIP8_MEMORY_SIZE];
-
-        for (i, v) in CHIP8_CHARACTERS.iter().enumerate() {
-            mem[i] = *v;
-        }
-
-        Memory { mem }
+        let mut mem = Memory { mem: [0; CHIP8_MEMORY_SIZE] };
+        mem.load(0x0, &CHIP8_CHARACTERS);
+        mem
     }
 
     pub fn in_range(&self, addr: usize) -> bool {
