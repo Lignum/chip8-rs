@@ -38,8 +38,8 @@ pub fn branch_test() {
         0x41, 0x42, // SNE V1, 0x42
         0x61, 0x42, // LD V1, 0x42,
 
-        0x62, 0x00, // LD V2, 0x20
-        0x50, 0x10, // SE V0, V1
+        0x62, 0x20, // LD V2, 0x20
+        0x90, 0x10, // SNE V0, V1
         0x62, 0x10, // LD V2, 0x10
 
         0x65, 0x32, // LD V5, 0x32
@@ -53,7 +53,7 @@ pub fn branch_test() {
 
     assert_eq!(Some(0x42), cpu.regs.v(0));
     assert_eq!(Some(0x24), cpu.regs.v(1));
-    assert_eq!(Some(0x10), cpu.regs.v(2));
+    assert_eq!(Some(0x20), cpu.regs.v(2));
     assert_eq!(Some(0x32), cpu.regs.v(5));
 }
 

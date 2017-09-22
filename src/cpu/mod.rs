@@ -57,6 +57,7 @@ impl CPU {
         let op = ((opcode & 0xF000) >> 12) as u8;
         let n2 = ((opcode & 0x0F00) >> 8) as u8;
         let n3 = ((opcode & 0x00F0) >> 4) as u8;
+        let n4 = (opcode & 0x000F) as u8;
         let b2 = (opcode & 0x00FF) as u8;
         let c2 = (opcode & 0x0FFF) as u16;
 
@@ -89,9 +90,17 @@ impl CPU {
             },
             // LD Vx, Vy
             0x8 => {
-                let v = self.v(n3);
-                self.set_v(n2, v);
+                //let x = self.v(n2);
+                let y = self.v(n3);
+
+                match n4 {
+                    0x0 => self.set_v(n2, y),
+
+                    _ => unknown_inst()
+                }
             },
+            // SNE Vx, Vy
+            0x9 => if self.v(n2) != self.v(n3) { self.skip() },
 
             _ => unknown_inst()
         }
