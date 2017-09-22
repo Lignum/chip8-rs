@@ -5,6 +5,9 @@ pub mod chars;
 use self::registers::Registers;
 use self::memory::Memory;
 
+use std;
+use std::num::Wrapping;
+
 pub struct CPU {
     pub regs: Registers,
     pub mem: Memory,
@@ -90,12 +93,24 @@ impl CPU {
             },
             // LD Vx, Vy
             0x8 => {
-                //let x = self.v(n2);
+                let x = self.v(n2);
                 let y = self.v(n3);
 
                 match n4 {
                     0x0 => self.set_v(n2, y),
-
+                    0x1 => self.set_v(n2, x | y),
+                    0x2 => self.set_v(n2, x & y),
+                    0x3 => self.set_v(n2, x ^ y),
+                    0x4 => {
+                        let carry = if x as u16 + y as u16 > std::u8::MAX as u16 { 1 } else { 0 };
+                        self.set_v(0xF, carry);
+                        self.set_v(n2, (Wrapping(x) + Wrapping(y)).0);
+                    },
+                    0x5 | 0x7 => {
+                        let borrow = if n4 == 0x5 { x <= y } else { y <= x };
+                        self.set_v(0xF, if !borrow { 1 } else { 0 });
+                        self.set_v(n2, (Wrapping(x) - Wrapping(y)).0);
+                    }
                     _ => unknown_inst()
                 }
             },

@@ -20,10 +20,47 @@ pub fn ld_test() {
 #[test]
 pub fn add_test() {
     let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x60, 0x03, // LD V0, 0x03
+        0x70, 0x07, // ADD V0, 0x07
 
-    cpu.execute(0x6003); // LD V0, 0x03
-    cpu.execute(0x7007); // ADD V0, 0x07
+        0x62, 0x02, // LD V2, 0x02
+        0x61, 0xFF, // LD V1, 0xFF
+        0x82, 0x14, // ADD V2, V1
+    ]).unwrap();
+
+    cpu.run(true);
+
     assert_eq!(Some(0xA), cpu.regs.v(0x0));
+    assert_eq!(Some(0x1), cpu.regs.v(0x2));
+    assert_eq!(Some(0x1), cpu.regs.v(0xF));
+}
+
+#[test]
+pub fn subtract_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x60, 0x08, // LD V0, 0x08
+        0x61, 0x05, // LD V1, 0x05
+        0x80, 0x15, // SUB V0, V1
+    ]);
+
+    cpu.run(true);
+
+    assert_eq!(Some(0x03), cpu.regs.v(0x0));
+    assert_eq!(Some(0x1), cpu.regs.v(0xF));
+
+    cpu.mem.load_program(&[
+        0x62, 0x04, // LD V2, 0x04
+        0x63, 0x08, // LD V3, 0x08
+        0x82, 0x37, // SUBN V2, V3
+    ]);
+
+    cpu.regs.pc = 0x200;
+    cpu.run(true);
+
+    assert_eq!(Some(0xFC), cpu.regs.v(0x2));
+    assert_eq!(Some(0x1), cpu.regs.v(0xF));
 }
 
 #[test]
