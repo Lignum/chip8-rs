@@ -43,10 +43,9 @@ impl CPU {
 
     pub fn execute(&mut self, opcode: u16) {
         let op = ((opcode & 0xF000) >> 12) as u8;
-        let n2 = ((opcode & 0x0F00) >> 8) as u8;
-        let n3 = ((opcode & 0x00F0) >> 4) as u8;
-        let b1 = ((opcode & 0xFF00) >> 8) as u8;
-        let b2 = (opcode & 0x00FF) as u8;
+        let n2 = ((opcode & 0x0F00) >> 8) as usize;
+        let n3 = ((opcode & 0x00F0) >> 4) as usize;
+        let b2 = (opcode & 0x00FF) as usize;
         let c2 = (opcode & 0x0FFF) as u16;
 
         match op {
@@ -64,9 +63,11 @@ impl CPU {
             // CALL
             0x2 => self.call(c2),
             // LD Vx, y
-            0x6 => self.regs.set_v(n2 as usize, b2).expect("invalid V register in LD Vx, y"),
+            0x6 => self.regs.set_v(n2, b2 as u8).expect("invalid V register in LD Vx, y"),
+            // ADD Vx, y
+            0x7 => self.regs.v(n2).and_then(|v| self.regs.set_v(n2, b2 as u8 + v)).expect("invalid V register in ADD Vx, y"),
             // LD Vx, Vy
-            0x8 => self.regs.v(n3 as usize).and_then(|v| self.regs.set_v(n2 as usize, v)).expect("invalid V register in LD Vx, Vy"),
+            0x8 => self.regs.v(n3).and_then(|v| self.regs.set_v(n2, v)).expect("invalid V register in LD Vx, Vy"),
 
             _ => unknown_inst()
         }
