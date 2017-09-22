@@ -3,4 +3,12 @@ name = "chip8"
 version = "0.1.0"
 authors = ["Lignum <me@lignum.pw>"]
 
+[lib]
+name = "chip8"
+path = "src/lib.rs"
+
+[[bin]]
+name = "chip8_emu"
+path = "src/main.rs"
+
 [dependencies]
