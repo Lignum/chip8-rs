@@ -12,7 +12,7 @@ impl Registers {
             i: 0,
             dt: 0,
             st: 0,
-            pc: 0,
+            pc: 0x200,
             v: [0; 16]
         }
     }

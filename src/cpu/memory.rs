@@ -57,4 +57,22 @@ impl Memory {
             None
         }
     }
+
+    pub fn load(&mut self, addr: usize, data: &[u8]) -> Option<()> {
+        let block = self.block_mut(addr, data.len());
+
+        match block {
+            Some(block) => {
+                for (i, v) in data.iter().enumerate() {
+                    block[i] = *v;
+                }
+                Some(())
+            },
+            None => None
+        }
+    }
+
+    pub fn load_program(&mut self, program: &[u8]) -> Option<()> {
+        self.load(0x200, program)
+    }
 }

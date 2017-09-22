@@ -24,16 +24,20 @@ impl CPU {
         }
     }
 
-    pub fn jump(&mut self, addr: u16) {
+    fn jump(&mut self, addr: u16) {
         self.regs.pc = addr;
     }
 
-    pub fn call(&mut self, addr: u16) {
+    fn skip(&mut self) {
+        self.regs.pc += 2;
+    }
+
+    fn call(&mut self, addr: u16) {
         self.stack.push(addr);
         self.jump(addr);
     }
 
-    pub fn ret(&mut self) {
+    fn ret(&mut self) {
         if let Some(addr) = self.stack.pop() {
             self.jump(addr);
         } else {
@@ -41,11 +45,19 @@ impl CPU {
         }
     }
 
+    fn v(&self, i: u8) -> u8 {
+        self.regs.v(i as usize).expect("invalid V register")
+    }
+
+    fn set_v(&mut self, i: u8, v: u8) {
+        self.regs.set_v(i as usize, v).expect("invalid V register")
+    }
+
     pub fn execute(&mut self, opcode: u16) {
         let op = ((opcode & 0xF000) >> 12) as u8;
-        let n2 = ((opcode & 0x0F00) >> 8) as usize;
-        let n3 = ((opcode & 0x00F0) >> 4) as usize;
-        let b2 = (opcode & 0x00FF) as usize;
+        let n2 = ((opcode & 0x0F00) >> 8) as u8;
+        let n3 = ((opcode & 0x00F0) >> 4) as u8;
+        let b2 = (opcode & 0x00FF) as u8;
         let c2 = (opcode & 0x0FFF) as u16;
 
         match op {
@@ -62,14 +74,44 @@ impl CPU {
             0x1 => self.jump(c2),
             // CALL
             0x2 => self.call(c2),
+            // SE Vx, y
+            0x3 => if self.v(n2) == b2 { self.skip() },
+            // SNE Vx, y
+            0x4 => if self.v(n2) != b2 { self.skip() },
             // LD Vx, y
-            0x6 => self.regs.set_v(n2, b2 as u8).expect("invalid V register in LD Vx, y"),
+            0x6 => self.set_v(n2, b2),
             // ADD Vx, y
-            0x7 => self.regs.v(n2).and_then(|v| self.regs.set_v(n2, b2 as u8 + v)).expect("invalid V register in ADD Vx, y"),
+            0x7 => {
+                let v = self.v(n2);
+                self.set_v(n2, b2 + v);
+            },
             // LD Vx, Vy
-            0x8 => self.regs.v(n3).and_then(|v| self.regs.set_v(n2, v)).expect("invalid V register in LD Vx, Vy"),
+            0x8 => {
+                let v = self.v(n3);
+                self.set_v(n2, v);
+            },
 
             _ => unknown_inst()
+        }
+    }
+
+    fn fetch(&self) -> u16 {
+        if let Some(b) = self.mem.block(self.regs.pc as usize, 2) {
+            ((b[0] as u16) << 8) | (b[1] as u16)
+        } else {
+            panic!("Failed to fetch next instruction!! Is PC out of bounds?")
+        }
+    }
+
+    pub fn step(&mut self) {
+        let opcode = self.fetch();
+        self.execute(opcode);
+        self.regs.pc += 2;
+    }
+
+    pub fn run(&mut self, stop_at_0: bool) {
+        while !stop_at_0 || (stop_at_0 && self.fetch() != 0x0000) {
+            self.step();
         }
     }
 }
