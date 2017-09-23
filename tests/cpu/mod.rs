@@ -172,6 +172,26 @@ pub fn reg_mem_test() {
 }
 
 #[test]
+pub fn bcd_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x63, 0x80, // LD V3, 128
+        0xA4, 0x00, // LD I, 0x400
+        0xF3, 0x33, // LD B, V3
+    ]);
+
+    cpu.run(true);
+
+    if let Some(block) = cpu.mem.block(0x400, 3) {
+        assert_eq!(1, block[0]);
+        assert_eq!(2, block[1]);
+        assert_eq!(8, block[2]);
+    } else {
+        panic!("cpu.mem.block(0x400, 3) failed");
+    }
+}
+
+#[test]
 pub fn step_test() {
     let mut cpu = CPU::new();
     cpu.mem.load_program(&[
