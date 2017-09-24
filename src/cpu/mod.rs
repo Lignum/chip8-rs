@@ -60,7 +60,7 @@ impl<I> CPU<I> where I: IOInterface {
         if let Some(addr) = self.stack.pop() {
             self.jump(addr);
         } else {
-            panic!("can't RET with an empty stack!!")
+            panic!("can't RET with an empty stack")
         }
     }
 

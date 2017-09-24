@@ -7,7 +7,6 @@ use chip8::cpu::CPU;
 #[test]
 pub fn ld_test() {
     let mut cpu = CPU::new(HeadlessInterface {});
-
     cpu.execute(0x6142); // LD V1, 0x42
     cpu.execute(0x6224); // LD V2, 0x24
     assert_eq!(Some(0x42), cpu.regs.v(0x1));
@@ -19,6 +18,17 @@ pub fn ld_test() {
 
     cpu.execute(0xA666); // LD I, 0x666
     assert_eq!(0x666, cpu.regs.i);
+}
+
+#[test]
+#[should_panic(expected = "can't RET with an empty stack")]
+pub fn invalid_ret_test() {
+    let mut cpu = CPU::new(HeadlessInterface {});
+    cpu.mem.load_program(&[
+        0x00, 0xEE
+    ]);
+
+    cpu.run(true);
 }
 
 #[test]
