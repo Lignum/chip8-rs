@@ -72,6 +72,33 @@ impl<I> CPU<I> where I: IOInterface {
         self.regs.set_v(i as usize, v).expect("invalid V register")
     }
 
+    fn draw(&mut self, x: u8, y: u8, addr: u16, size: u8) {
+        let pixels = {
+            if let Some(block) = self.mem.block(addr as usize, size as usize) {
+                let mut vec = Vec::with_capacity(size as usize);
+                block.clone_into(&mut vec);
+                vec
+            } else {
+                panic!("could not draw due to I being out of range")
+            }
+        };
+
+        self.set_v(0xF, 0);
+
+        for (y, pixel) in pixels.into_iter().enumerate() {
+            for x in 0..7 {
+                if pixel & (0x80 >> x) != 0 {
+                    let white = self.io.pixel(x, y as u32);
+                    if white {
+                        self.set_v(0xF, 1);
+                    }
+
+                    self.io.set_pixel(x, y as u32, !white);
+                }
+            }
+        }
+    }
+
     pub fn press_key(&mut self, key: u8) {
         if let Interrupt::AwaitKey(reg) = self.interrupt {
             self.set_v(reg, key);
@@ -177,7 +204,15 @@ impl<I> CPU<I> where I: IOInterface {
 
                     _ => unknown_inst()
                 }
-            }
+            },
+
+            // DRW Vx, Vy, x
+            0xD => {
+                let x = self.v(n2);
+                let y = self.v(n3);
+                let i = self.regs.i;
+                self.draw(x, y, i, n4)
+            },
 
             0xF => {
                 match b2 {
