@@ -1,10 +1,8 @@
 pub mod registers;
 pub mod memory;
-pub mod chars;
 
 use self::registers::Registers;
 use self::memory::Memory;
-use super::io::IOInterface;
 
 use std;
 use std::num::Wrapping;
@@ -18,28 +16,77 @@ pub enum Interrupt {
     AwaitKey(u8)
 }
 
-pub struct CPU<I: IOInterface> {
+pub struct CPUEnvironment {
+    keyboard: [bool; 16],
+    display: Vec<bool>,
+    display_width: u8,
+    display_height: u8
+}
+
+impl CPUEnvironment {
+    pub fn new(display_width: u8, display_height: u8) -> CPUEnvironment {
+        CPUEnvironment {
+            keyboard: [false; 16],
+            display: vec![false; display_width as usize * display_height as usize],
+            display_width,
+            display_height
+        }
+    }
+
+    pub fn is_key_pressed(&self, key: u8) -> bool {
+        match self.keyboard.get(key as usize) {
+            Some(pressed) => *pressed,
+            None => false
+        }
+    }
+
+    pub fn set_pixel(&mut self, x: u32, y: u32, white: bool) {
+        let x = x % self.display_width as u32;
+        let y = y % self.display_height as u32;
+
+        match self.display.get_mut((y * self.display_width as u32 + x) as usize) {
+            Some(pix) => *pix = white,
+            None => ()
+        }
+    }
+
+    pub fn pixel(&mut self, x: u32, y: u32) -> bool {
+        let x = x % self.display_width as u32;
+        let y = y % self.display_height as u32;
+
+        match self.display.get((y * self.display_width as u32 + x) as usize) {
+            Some(pix) => *pix,
+            None => false
+        }
+    }
+
+    pub fn clear_screen(&mut self) {
+        self.display = vec![false; self.display_width as usize * self.display_height as usize];
+    }
+}
+
+pub struct CPU {
     pub regs: Registers,
     pub mem: Memory,
+    pub env: CPUEnvironment,
+    pub interrupt: Interrupt,
     stack: Vec<u16>,
     rng: ThreadRng,
-    interrupt: Interrupt,
-    io: I
 }
 
 fn unknown_inst() {
     panic!("unknown instruction!")
 }
 
-impl<I> CPU<I> where I: IOInterface {
-    pub fn new(io: I) -> CPU<I> {
+impl CPU {
+    pub fn new(display_width: u8, display_height: u8) -> CPU {
         CPU {
             regs: Registers::new(),
             mem: Memory::new(),
             stack: Vec::with_capacity(16),
             rng: rand::thread_rng(),
             interrupt: Interrupt::None,
-            io
+            env: CPUEnvironment::new(display_width, display_height)
         }
     }
 
@@ -72,7 +119,7 @@ impl<I> CPU<I> where I: IOInterface {
         self.regs.set_v(i as usize, v).expect("invalid V register")
     }
 
-    fn draw(&mut self, x: u8, y: u8, addr: u16, size: u8) {
+    fn draw(&mut self, gx: u8, gy: u8, addr: u16, size: u8) {
         let pixels = {
             if let Some(block) = self.mem.block(addr as usize, size as usize) {
                 let mut vec = Vec::with_capacity(size as usize);
@@ -88,12 +135,15 @@ impl<I> CPU<I> where I: IOInterface {
         for (y, pixel) in pixels.into_iter().enumerate() {
             for x in 0..7 {
                 if pixel & (0x80 >> x) != 0 {
-                    let white = self.io.pixel(x, y as u32);
+                    let lx = gx as u32 + x as u32;
+                    let ly = gy as u32 + y as u32;
+                    let white = self.env.pixel(lx, ly);
+
                     if white {
                         self.set_v(0xF, 1);
                     }
 
-                    self.io.set_pixel(x, y as u32, !white);
+                    self.env.set_pixel(lx, ly, !white);
                 }
             }
         }
@@ -116,7 +166,7 @@ impl<I> CPU<I> where I: IOInterface {
         match op {
             0x0 => match b2 {
                 // CLS
-                0xE0 => self.io.clear_screen(),
+                0xE0 => self.env.clear_screen(),
                 // RET
                 0xEE => self.ret(),
                 // SYS, ignore
@@ -198,9 +248,9 @@ impl<I> CPU<I> where I: IOInterface {
             0xE => {
                 match b2 {
                     // SKP Vx
-                    0x9E => if self.io.is_key_pressed(self.v(n2)) { self.skip() },
+                    0x9E => if self.env.is_key_pressed(self.v(n2)) { self.skip() },
                     // SKNP Vx
-                    0xA1 => if !self.io.is_key_pressed(self.v(n2)) { self.skip() },
+                    0xA1 => if !self.env.is_key_pressed(self.v(n2)) { self.skip() },
 
                     _ => unknown_inst()
                 }

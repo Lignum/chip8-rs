@@ -1,4 +1,4 @@
-use super::chars::CHIP8_CHARACTERS;
+use super::super::io::chars::CHIP8_CHARACTERS;
 
 pub struct Memory {
     mem: [u8; 4096]
