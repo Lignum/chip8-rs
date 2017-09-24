@@ -1,6 +1,6 @@
 use chip8::cpu::memory::Memory;
 use chip8::cpu::memory::CHIP8_MEMORY_SIZE;
-use chip8::cpu::chars::CHIP8_CHARACTERS;
+use chip8::io::chars::CHIP8_CHARACTERS;
 
 #[test]
 pub fn memory_in_range() {

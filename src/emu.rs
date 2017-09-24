@@ -50,7 +50,7 @@ impl Emulator {
 
         let event_pump = sdl.event_pump().expect("Failed to initialise SDL2 event subsystem");
 
-        Emulator { canvas, event_pump, cpu: chip8::cpu::CPU::new(64, 32) }
+        Emulator { canvas, event_pump, cpu: chip8::cpu::CPU::new() }
     }
 
     fn draw_screen(&mut self) {
@@ -79,16 +79,8 @@ impl Emulator {
         }
     }
 
-    pub fn start_loop(&mut self) {
-        self.cpu.mem.load_program(&[
-            0x61, 0x01, // 0200 - LD V1, 1
-            0x60, 0x00, // 0202 - LD V0, 0
-            0x00, 0xE0, // 0204 - CLS
-            0xF0, 0x29, // 0206 - LD F, V0
-            0xD1, 0x15, // 0208 - DRW V1, V1, 5
-            0xF0, 0x0A, // 020A - LD V0, K
-            0x12, 0x04, // 020C - JP 0x0204
-        ]);
+    pub fn start(&mut self, program: &[u8]) {
+        self.cpu.mem.load_program(program);
 
         'main_loop: loop {
             for event in self.event_pump.poll_iter() {

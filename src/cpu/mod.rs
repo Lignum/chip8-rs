@@ -79,14 +79,14 @@ fn unknown_inst() {
 }
 
 impl CPU {
-    pub fn new(display_width: u8, display_height: u8) -> CPU {
+    pub fn new() -> CPU {
         CPU {
             regs: Registers::new(),
             mem: Memory::new(),
             stack: Vec::with_capacity(16),
             rng: rand::thread_rng(),
             interrupt: Interrupt::None,
-            env: CPUEnvironment::new(display_width, display_height)
+            env: CPUEnvironment::new(64, 32)
         }
     }
 
@@ -99,15 +99,16 @@ impl CPU {
     }
 
     fn call(&mut self, addr: u16) {
-        self.stack.push(addr);
+        self.stack.push(self.regs.pc + 2);
         self.jump(addr);
     }
 
     fn ret(&mut self) {
+
         if let Some(addr) = self.stack.pop() {
             self.jump(addr);
         } else {
-            panic!("can't RET with an empty stack")
+            panic!("can't RET with an empty stack");
         }
     }
 

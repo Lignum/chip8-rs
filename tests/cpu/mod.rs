@@ -1,7 +1,6 @@
 mod registers;
 mod memory;
 
-use chip8::io::{HeadlessInterface, IOInterface};
 use chip8::cpu::CPU;
 
 #[test]
@@ -213,6 +212,27 @@ pub fn bcd_test() {
     } else {
         panic!("cpu.mem.block(0x400, 3) failed");
     }
+}
+
+#[test]
+pub fn call_test() {
+    let mut cpu = CPU::new();
+    cpu.mem.load_program(&[
+        0x22, 0x08, // 0200 - CALL 0x200
+        0x00, 0x00, // 0202
+
+        0x60, 0x42, // 0204 - LD V0, 0x42
+        0x00, 0xEE, // 0206 - RET
+
+        0x22, 0x04, // 0208 - CALL 0x200
+        0x61, 0x24, // 020A - LD V1, 0x24
+        0x00, 0xEE, // 020C - RET
+    ]);
+
+    cpu.run(true);
+
+    assert_eq!(Some(0x42), cpu.regs.v(0));
+    assert_eq!(Some(0x24), cpu.regs.v(1));
 }
 
 #[test]
