@@ -190,7 +190,7 @@ impl CPU {
             // ADD Vx, y
             0x7 => {
                 let v = self.v(n2);
-                self.set_v(n2, b2 + v);
+                self.set_v(n2, (Wrapping(b2) + Wrapping(v)).0);
             },
             // LD Vx, Vy
             0x8 => {
@@ -280,7 +280,7 @@ impl CPU {
                     // LD ST, Vx
                     0x18 => self.regs.st = self.v(n2),
                     // ADD I, Vx
-                    0x1E => self.regs.i += self.v(n2) as u16,
+                    0x1E => self.regs.i = (Wrapping(self.regs.i) + Wrapping(self.v(n2) as u16)).0,
                     // LD F, Vx
                     0x29 => self.regs.i = 0x00 + 5 * self.v(n2) as u16,
                     // LD B, Vx
