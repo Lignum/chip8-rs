@@ -1,8 +1,8 @@
 mod registers;
 mod memory;
 
-use std::rc::Rc;
-use chip8::cpu::{CPU, IOInterface, HeadlessInterface};
+use chip8::io::{HeadlessInterface, IOInterface};
+use chip8::cpu::CPU;
 
 #[test]
 pub fn ld_test() {

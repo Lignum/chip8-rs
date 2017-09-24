@@ -4,22 +4,13 @@ pub mod chars;
 
 use self::registers::Registers;
 use self::memory::Memory;
+use super::io::{IOInterface, HeadlessInterface};
 
 use std;
 use std::num::Wrapping;
 
 use rand;
 use rand::{ThreadRng, Rng};
-
-pub trait IOInterface {
-    fn clear_screen(&mut self) -> ();
-}
-
-pub struct HeadlessInterface {}
-
-impl IOInterface for HeadlessInterface {
-    fn clear_screen(&mut self) {}
-}
 
 pub struct CPU<I: IOInterface> {
     pub regs: Registers,
