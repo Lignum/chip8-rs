@@ -1,11 +1,12 @@
 mod registers;
 mod memory;
 
-use chip8::cpu::CPU;
+use std::rc::Rc;
+use chip8::cpu::{CPU, IOInterface, HeadlessInterface};
 
 #[test]
 pub fn ld_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
 
     cpu.execute(0x6142); // LD V1, 0x42
     cpu.execute(0x6224); // LD V2, 0x24
@@ -22,7 +23,7 @@ pub fn ld_test() {
 
 #[test]
 pub fn flow_jp_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x00, // 0200 - LD V0, 0x00
         0x70, 0x01, // 0202 - ADD V0, 0x01
@@ -48,7 +49,7 @@ pub fn flow_jp_test() {
 
 #[test]
 pub fn add_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x03, // LD V0, 0x03
         0x70, 0x07, // ADD V0, 0x07
@@ -67,7 +68,7 @@ pub fn add_test() {
 
 #[test]
 pub fn subtract_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x08, // LD V0, 0x08
         0x61, 0x05, // LD V1, 0x05
@@ -94,7 +95,7 @@ pub fn subtract_test() {
 
 #[test]
 pub fn shift_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x04, // LD V0, 0x04
         0x81, 0x0E, // SHL V1, V0
@@ -111,7 +112,7 @@ pub fn shift_test() {
 
 #[test]
 pub fn branch_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x42, // LD V0, 0x42
         0x30, 0x42, // SE V0, 0x42
@@ -142,7 +143,7 @@ pub fn branch_test() {
 
 #[test]
 pub fn reg_mem_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x01, // LD V0, 0x01
         0x61, 0x02, // LD V1, 0x02
@@ -171,9 +172,30 @@ pub fn reg_mem_test() {
     assert_eq!(0x007, cpu.regs.i);
 }
 
+struct ClearTestInterface {}
+
+impl IOInterface for ClearTestInterface {
+    fn clear_screen(&mut self) {
+        panic!("ok")
+    }
+}
+
+#[test]
+#[should_panic(expected = "ok")]
+pub fn clear_test() {
+    let cti = ClearTestInterface {};
+
+    let mut cpu = CPU::new(cti);
+    cpu.mem.load_program(&[
+        0x00, 0xE0, // CLS
+    ]);
+
+    cpu.run(true);
+}
+
 #[test]
 pub fn bcd_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x63, 0x80, // LD V3, 128
         0xA4, 0x00, // LD I, 0x400
@@ -193,7 +215,7 @@ pub fn bcd_test() {
 
 #[test]
 pub fn step_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x42 // LD V0, 0x42
     ]);
@@ -205,7 +227,7 @@ pub fn step_test() {
 
 #[test]
 pub fn run_test() {
-    let mut cpu = CPU::new();
+    let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
         0x60, 0x42, // LD V0, 0x42
         0x61, 0x24, // LD V1, 0x24

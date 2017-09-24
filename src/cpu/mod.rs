@@ -11,24 +11,36 @@ use std::num::Wrapping;
 use rand;
 use rand::{ThreadRng, Rng};
 
-pub struct CPU {
+pub trait IOInterface {
+    fn clear_screen(&mut self) -> ();
+}
+
+pub struct HeadlessInterface {}
+
+impl IOInterface for HeadlessInterface {
+    fn clear_screen(&mut self) {}
+}
+
+pub struct CPU<I: IOInterface> {
     pub regs: Registers,
     pub mem: Memory,
     pub stack: Vec<u16>,
-    rng: ThreadRng
+    rng: ThreadRng,
+    io: I
 }
 
 fn unknown_inst() {
     panic!("unknown instruction!")
 }
 
-impl CPU {
-    pub fn new() -> CPU {
+impl<I> CPU<I> where I: IOInterface {
+    pub fn new(io: I) -> CPU<I> {
         CPU {
             regs: Registers::new(),
             mem: Memory::new(),
             stack: Vec::with_capacity(16),
-            rng: rand::thread_rng()
+            rng: rand::thread_rng(),
+            io: io
         }
     }
 
@@ -72,7 +84,7 @@ impl CPU {
         match op {
             0x0 => match b2 {
                 // CLS
-                0xE0 => /* TODO: clear screen */ (),
+                0xE0 => self.io.clear_screen(),
                 // RET
                 0xEE => self.ret(),
                 // SYS, ignore
