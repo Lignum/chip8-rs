@@ -152,6 +152,7 @@ impl CPU {
     pub fn press_key(&mut self, key: u8) {
         if let Interrupt::AwaitKey(reg) = self.interrupt {
             self.set_v(reg, key);
+            self.interrupt = Interrupt::None;
         }
     }
 
