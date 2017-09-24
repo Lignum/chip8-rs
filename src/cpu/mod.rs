@@ -220,7 +220,7 @@ impl CPU {
     }
 
     pub fn run(&mut self, stop_at_0: bool) {
-        while !stop_at_0 || (stop_at_0 && self.fetch() != 0x0000) {
+        while !stop_at_0 || self.fetch() != 0x0000 {
             self.step();
         }
     }
