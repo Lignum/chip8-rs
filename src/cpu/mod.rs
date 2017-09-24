@@ -157,6 +157,11 @@ impl CPU {
         }
     }
 
+    pub fn tick(&mut self) {
+        if self.regs.dt > 0 { self.regs.dt -= 1; }
+        if self.regs.st > 0 { self.regs.st -= 1; }
+    }
+
     pub fn execute(&mut self, opcode: u16) {
         let op = ((opcode & 0xF000) >> 12) as u8;
         let n2 = ((opcode & 0x0F00) >> 8) as u8;

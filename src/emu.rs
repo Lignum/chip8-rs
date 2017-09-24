@@ -4,10 +4,14 @@ use phf;
 use sdl2;
 use sdl2::event::Event;
 
+use time;
+
 const WINDOW_TITLE: &str = "CHIP-8 Emulator";
 
 const PIXEL_WIDTH: u32 = 16;
 const PIXEL_HEIGHT: u32 = 16;
+
+const TICK_FREQUENCY: u64 = 60;
 
 static KEY_MAPPING: phf::Map<&'static str, u8> = phf_map! {
     "1" => 0x1,
@@ -35,6 +39,11 @@ pub struct Emulator {
     cpu: chip8::cpu::CPU
 }
 
+fn time_now_ms() -> u64 {
+    let ts = time::get_time();
+    (ts.sec + ts.nsec as i64 / 1000000) as u64
+}
+
 impl Emulator {
     pub fn new() -> Emulator {
         let sdl = sdl2::init().expect("Failed to initialise SDL2");
@@ -46,6 +55,7 @@ impl Emulator {
             .expect("Failed to create window");
 
         let canvas: sdl2::render::WindowCanvas = window.into_canvas()
+            .present_vsync()
             .build().expect("Failed to create canvas for window");
 
         let event_pump = sdl.event_pump().expect("Failed to initialise SDL2 event subsystem");
@@ -82,7 +92,16 @@ impl Emulator {
     pub fn start(&mut self, program: &[u8]) {
         self.cpu.mem.load_program(program);
 
+        let mut last_time = time_now_ms();
+        let mut tick_timer = 0;
+
         'main_loop: loop {
+            let now = time_now_ms();
+            let dt = if last_time > now { now } else { now - last_time };
+            last_time = now;
+
+            tick_timer += dt;
+
             for event in self.event_pump.poll_iter() {
                 match event {
                     Event::Quit {..} => break 'main_loop,
@@ -103,6 +122,11 @@ impl Emulator {
                     }
                     _ => {}
                 }
+            }
+
+            if tick_timer >= 1000 / TICK_FREQUENCY {
+                self.cpu.tick();
+                tick_timer = 0;
             }
 
             self.cpu.step();

@@ -8,6 +8,7 @@ rand = "*"
 sdl2 = "*"
 phf = "*"
 phf_macros = "*"
+time = "*"
 
 [lib]
 name = "chip8"
