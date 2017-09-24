@@ -194,6 +194,19 @@ pub fn clear_test() {
 }
 
 #[test]
+pub fn ld_char_test() {
+    let mut cpu = CPU::new(HeadlessInterface {});
+    cpu.mem.load_program(&[
+        0x60, 0x02, // LD V0, 2
+        0xF0, 0x29, // LD F, V0
+    ]);
+    
+    cpu.run(true);
+
+    assert_eq!(5 * 2, cpu.regs.i);
+}
+
+#[test]
 pub fn bcd_test() {
     let mut cpu = CPU::new(HeadlessInterface {});
     cpu.mem.load_program(&[
