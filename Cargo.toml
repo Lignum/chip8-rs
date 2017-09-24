@@ -6,6 +6,8 @@ version = "0.1.0"
 [dependencies]
 rand = "*"
 sdl2 = "*"
+phf = "*"
+phf_macros = "*"
 
 [lib]
 name = "chip8"

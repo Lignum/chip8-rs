@@ -17,10 +17,10 @@ pub enum Interrupt {
 }
 
 pub struct CPUEnvironment {
-    keyboard: [bool; 16],
-    display: Vec<bool>,
-    display_width: u8,
-    display_height: u8
+    pub keyboard: [bool; 16],
+    pub display: Vec<bool>,
+    pub display_width: u8,
+    pub display_height: u8
 }
 
 impl CPUEnvironment {
