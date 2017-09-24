@@ -12,11 +12,18 @@ use std::num::Wrapping;
 use rand;
 use rand::{ThreadRng, Rng};
 
+#[derive(Debug)]
+pub enum Interrupt {
+    None,
+    AwaitKey(u8)
+}
+
 pub struct CPU<I: IOInterface> {
     pub regs: Registers,
     pub mem: Memory,
-    pub stack: Vec<u16>,
+    stack: Vec<u16>,
     rng: ThreadRng,
+    interrupt: Interrupt,
     io: I
 }
 
@@ -31,6 +38,7 @@ impl<I> CPU<I> where I: IOInterface {
             mem: Memory::new(),
             stack: Vec::with_capacity(16),
             rng: rand::thread_rng(),
+            interrupt: Interrupt::None,
             io
         }
     }
@@ -62,6 +70,12 @@ impl<I> CPU<I> where I: IOInterface {
 
     fn set_v(&mut self, i: u8, v: u8) {
         self.regs.set_v(i as usize, v).expect("invalid V register")
+    }
+
+    pub fn press_key(&mut self, key: u8) {
+        if let Interrupt::AwaitKey(reg) = self.interrupt {
+            self.set_v(reg, key);
+        }
     }
 
     pub fn execute(&mut self, opcode: u16) {
@@ -154,6 +168,17 @@ impl<I> CPU<I> where I: IOInterface {
                 self.set_v(n2, r & b2);
             },
 
+            0xE => {
+                match b2 {
+                    // SKP Vx
+                    0x9E => if self.io.is_key_pressed(self.v(n2)) { self.skip() },
+                    // SKNP Vx
+                    0xA1 => if !self.io.is_key_pressed(self.v(n2)) { self.skip() },
+
+                    _ => unknown_inst()
+                }
+            }
+
             0xF => {
                 match b2 {
                     // LD Vx, DT
@@ -161,6 +186,8 @@ impl<I> CPU<I> where I: IOInterface {
                         let dt = self.regs.dt;
                         self.set_v(n2, dt);
                     },
+                    // LD Vx, K
+                    0x0A => self.interrupt = Interrupt::AwaitKey(n2),
                     // LD DT, Vx
                     0x15 => self.regs.dt = self.v(n2),
                     // LD ST, Vx
@@ -216,10 +243,16 @@ impl<I> CPU<I> where I: IOInterface {
         }
     }
 
-    pub fn step(&mut self) {
-        let opcode = self.fetch();
-        self.execute(opcode);
-        self.regs.pc += 2;
+    pub fn step(&mut self) -> bool {
+        match self.interrupt {
+            Interrupt::None => {
+                let opcode = self.fetch();
+                self.execute(opcode);
+                self.regs.pc += 2;
+                true
+            },
+            _ => false
+        }
     }
 
     pub fn run(&mut self, stop_at_0: bool) {

@@ -178,6 +178,12 @@ impl IOInterface for ClearTestInterface {
     fn clear_screen(&mut self) {
         panic!("ok")
     }
+
+    fn is_key_pressed(&self, _: u8) -> bool { false }
+
+    fn set_pixel(&mut self, _: u32, _: u32, _: bool) -> () {}
+
+    fn pixel(&self, _: u32, _: u32) -> bool { false }
 }
 
 #[test]
