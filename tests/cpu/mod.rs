@@ -183,9 +183,7 @@ impl IOInterface for ClearTestInterface {
 #[test]
 #[should_panic(expected = "ok")]
 pub fn clear_test() {
-    let cti = ClearTestInterface {};
-
-    let mut cpu = CPU::new(cti);
+    let mut cpu = CPU::new(ClearTestInterface {});
     cpu.mem.load_program(&[
         0x00, 0xE0, // CLS
     ]);

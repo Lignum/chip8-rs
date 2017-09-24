@@ -4,7 +4,7 @@ pub mod chars;
 
 use self::registers::Registers;
 use self::memory::Memory;
-use super::io::{IOInterface, HeadlessInterface};
+use super::io::IOInterface;
 
 use std;
 use std::num::Wrapping;
@@ -31,7 +31,7 @@ impl<I> CPU<I> where I: IOInterface {
             mem: Memory::new(),
             stack: Vec::with_capacity(16),
             rng: rand::thread_rng(),
-            io: io
+            io
         }
     }
 
