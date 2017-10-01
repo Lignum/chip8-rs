@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 #![feature(plugin)]
 #![plugin(phf_macros)]
 

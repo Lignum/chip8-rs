@@ -73,8 +73,8 @@ impl Emulator {
 
         self.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
 
-        for x in 0..(w-1) {
-            for y in 0..(h-1) {
+        for x in 0..w {
+            for y in 0..h {
                 if disp[(y * w + x) as usize] {
                     let rect = sdl2::rect::Rect::new(
                         (x * PIXEL_WIDTH) as i32,
