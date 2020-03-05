@@ -1,10 +1,11 @@
 use chip8;
 use phf;
+use phf::phf_map;
 
 use sdl2;
 use sdl2::event::Event;
 
-use time;
+use std::time::Instant;
 
 const WINDOW_TITLE: &str = "CHIP-8 Emulator";
 
@@ -40,8 +41,7 @@ pub struct Emulator {
 }
 
 fn time_now_ms() -> u64 {
-    let ts = time::get_time();
-    (ts.sec + ts.nsec as i64 / 1000000) as u64
+    Instant::now().elapsed().as_millis() as u64
 }
 
 impl Emulator {

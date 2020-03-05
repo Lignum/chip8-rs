@@ -1,11 +1,8 @@
 #![windows_subsystem = "windows"]
-#![feature(plugin)]
-#![plugin(phf_macros)]
 
 extern crate chip8;
 extern crate sdl2;
 extern crate phf;
-extern crate time;
 
 use std::fs::File;
 use std::io::Read;

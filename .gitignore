@@ -3,3 +3,5 @@
 /target/
 **/*.rs.bk
 game.ch8
+*.dll
+*.lib

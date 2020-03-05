@@ -8,7 +8,7 @@ use std;
 use std::num::Wrapping;
 
 use rand;
-use rand::{ThreadRng, Rng};
+use rand::prelude::*;
 
 #[derive(Debug)]
 pub enum Interrupt {
@@ -123,8 +123,8 @@ impl CPU {
     fn draw(&mut self, gx: u8, gy: u8, addr: u16, size: u8) {
         let pixels = {
             if let Some(block) = self.mem.block(addr as usize, size as usize) {
-                let mut vec = Vec::with_capacity(size as usize);
-                block.clone_into(&mut vec);
+                let mut vec = vec![0; size as usize];
+                vec.clone_from_slice(block);
                 vec
             } else {
                 panic!("could not draw due to I being out of range")

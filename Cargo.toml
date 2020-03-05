@@ -2,13 +2,12 @@
 authors = ["Lignum <me@lignum.pw>"]
 name = "chip8"
 version = "0.1.0"
+edition = "2018"
 
 [dependencies]
-rand = "*"
-sdl2 = "*"
-phf = "*"
-phf_macros = "*"
-time = "*"
+rand = "0.7.3"
+sdl2 = "0.33.0"
+phf = { version = "0.8.0", features = ["macros"] }
 
 [lib]
 name = "chip8"
